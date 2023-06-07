@@ -11,6 +11,7 @@ def describe_dataset(filename):
         summary_df = pd.DataFrame()
         for column in numeric_features.columns:
             values = df[column]
+            # to drop nan values in order to handle data properly
             values = values.dropna()
             # Calculate statistics manually
             count = len(values)
