@@ -6,32 +6,71 @@ import pandas as pd
 
 def describe_dataset(filename):
     try:
-        df = pd.read_csv(filename).set_index('Index')
-        numeric_features = df.select_dtypes(include='number')
-        summary_df = pd.DataFrame()
-        for column in numeric_features.columns:
-            values = df[column]
-            # to drop nan values in order to handle data properly
-            values = values.dropna()
-            # Calculate statistics manually
-            count = len(values)
-            mean = sum(values) / count
-            stddev = (sum((x - mean) ** 2 for x in values) / count) ** 0.5
-            minimum = min(values)
-            quartiles = [values.quantile(q) for q in [0.25, 0.50, 0.75]]
-            maximum = max(values)
+        df = pd.read_csv(filename, index_col='Index')
 
-            # Create a temporary DataFrame with custom index
-            index_labels = ['Count', 'Mean', 'Std',
-                            'Min', '25%', '50%', '75%', 'Max']
-            temp_df = pd.DataFrame([count, mean, stddev, minimum, quartiles[0],
-                                    quartiles[1], quartiles[2], maximum],
-                                   index=index_labels, columns=[column])
+        # print(df.dtypes)
+
+        df['Birthday'] = pd.to_datetime(df['Birthday'])
+
+        df.drop(['First Name', 'Last Name'], axis=1, inplace=True)
+
+        summary_df = pd.DataFrame()
+        for column in df.columns:
+            print(column)
+            if df.dtypes[column] == 'float64':
+                values = df[column]
+                # to drop nan values in order to handle data properly
+                values = values.dropna()
+                # Calculate statistics manually
+                count = len(values)
+                mean = sum(values) / count
+                stddev = (sum((x - mean) ** 2 for x in values) / count) ** 0.5
+                minimum = min(values)
+                quartiles = [values.quantile(q) for q in [0.25, 0.50, 0.75]]
+                maximum = max(values)
+
+                # Create a temporary DataFrame with custom index
+                index_labels = ['Count', 'Mean', 'Std',
+                                'Min', '25%', '50%', '75%', 'Max']
+                temp_df = pd.DataFrame([count, mean, stddev, minimum, quartiles[0],
+                                        quartiles[1], quartiles[2], maximum],
+                                       index=index_labels, columns=[column])
+
+            elif df.dtypes[column] == 'object':
+                values = df[column].dropna()
+                count = len(values)
+                unique = len(values.unique())
+                top = values.mode().iloc[0]
+                freq = values.value_counts().iloc[0]
+
+                index_labels = ['Count', 'Unique', 'Top', 'Freq']
+                temp_df = pd.DataFrame([count, unique, top, freq],
+                                       index=index_labels, columns=[column])
+
+            elif df.dtypes[column] == 'datetime64[ns]':
+
+                values = df[column].dropna()
+                count = len(values)
+                mean = values.mean()
+                minimum = values.min()
+                quartiles = [values.quantile(q) for q in [0.25, 0.50, 0.75]]
+                maximum = values.max()
+
+                index_labels = ['Count', 'Mean',
+                                'Min', '25%', '50%', '75%', 'Max']
+                temp_df = pd.DataFrame([count, mean, minimum, quartiles[0],
+                                        quartiles[1], quartiles[2], maximum],
+                                       index=index_labels, columns=[column])
 
             # Append the temporary DataFrame to the summary DataFrame
             summary_df = pd.concat([summary_df, temp_df], axis=1)
 
+        # summary_df.reset_index(drop=True, inplace=True)
+
+        # print(summary_df.columns)
+        pd.set_option('display.max_columns', None)
         print(summary_df)
+
         # to compare result with pandas describe funciton
         # print(numeric_features.describe())
     except FileNotFoundError:
