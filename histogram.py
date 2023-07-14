@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math
 
-# what's ANOVA?? it's not used in here
 
 def histogram(numeric_features, houses):
     # Step 2: Calculate average scores for each house
