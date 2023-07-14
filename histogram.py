@@ -1,12 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
-import numpy as np
-import seaborn as sns
-
 
 # what's ANOVA?? it's not used in here
-
 
 def histogram(numeric_features, houses):
     # Step 2: Calculate average scores for each house
@@ -54,45 +50,8 @@ def histogram(numeric_features, houses):
     plt.show()
 
 
-def scatter(numeric_features):
-
-    # Step 2: Calculate correlation matrix
-    correlation_matrix = numeric_features.corr()
-
-    print(correlation_matrix)
-
-    # Step 3: Find similar features
-    similar_features = []
-    threshold = 0.8  # Set correlation threshold for similarity
-
-    for i in range(len(correlation_matrix.columns)):
-        for j in range(i+1, len(correlation_matrix.columns)):
-            if abs(correlation_matrix.iloc[i, j]) >= threshold:
-                similar_features.append(
-                    (correlation_matrix.columns[i], correlation_matrix.columns[j]))
-
-    # Step 4: Create scatter plots for similar features
-    for feature1, feature2 in similar_features:
-        plt.scatter(data[feature1], data[feature2])
-        plt.xlabel(feature1)
-        plt.ylabel(feature2)
-        plt.title(f"Scatter plot: {feature1} vs {feature2}")
-        plt.show()
-
-
-def pair(data):
-    # # Step 3: Create pair plot or scatter plot matrix for categorical features
-    # Adjust the size according to your desired pixel values
-
-    sns.pairplot(data, kind='scatter', diag_kind='hist',
-                 height=0.8, aspect=1.2)
-    plt.show()
-
-
 if __name__ == "__main__":
     data = pd.read_csv('./datasets/dataset_train.csv').set_index('Index')
     numeric_features = data.select_dtypes(include='number').columns
     houses = data['Hogwarts House'].unique()
-    # histogram(numeric_features, houses)
-    # scatter(data[numeric_features])
-    pair(data[numeric_features])
+    histogram(numeric_features, houses)
