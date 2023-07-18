@@ -65,17 +65,20 @@ def logreg_train(dataset_path):
         # Create a binary target variable for the current class
         binary_target = (y_numeric == i).astype(int)
         binary_target = np.reshape(binary_target, (-1, 1))
-        if i == 0:
-            np.savetxt('griff_binary.csv', binary_target, delimiter=',')
+        # if i == 0:
+        #     np.savetxt('griff_binary.csv', binary_target, delimiter=',')
         # print(binary_target)
 
         # print(X.shape)
-        # Create an instance of MyLogisticRegression
+        # Create an instance of MyLogisticRegression and train
         logistic_regression = MyLogisticRegression(
             theta=np.random.rand(X.shape[1] + 1, 1), alpha=1e-2, max_iter=100000)
-
-        # Train the logistic regression model
         theta = logistic_regression.fit_(X, binary_target)
+
+        # stochastic gradient descent
+        # logistic_regression = MyLogisticRegression(
+        #     theta=np.random.rand(X.shape[1] + 1, 1), alpha=1e-2, max_iter=100)
+        # theta = logistic_regression.stochastic_fit_(X, binary_target)
 
         # Save the weights for the current class
         weights.append(theta)

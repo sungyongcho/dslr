@@ -125,3 +125,25 @@ class MyLogisticRegression():
             # if i % 10000 == 0:
             #     print(i, "th:", self.theta.flatten())
         return self.theta
+
+    def stochastic_fit_(self, x, y):
+        num_examples = x.shape[0]
+        for iteration in range(self.max_iter):
+            shuffled_indices = np.random.permutation(num_examples)
+            x_shuffled = x[shuffled_indices]
+            y_shuffled = y[shuffled_indices]
+
+            for i in range(num_examples):
+                x_i = x_shuffled[i]
+                y_i = y_shuffled[i]
+
+                gradient_update = self.gradient_(x_i[np.newaxis, :], y_i[np.newaxis, :])
+                if gradient_update is None:
+                    return None
+
+                self.theta = self.theta.astype(np.float64)
+                self.theta -= self.alpha * gradient_update
+
+            if iteration % 10000 == 0:
+                print(iteration, "th:", self.theta.flatten())
+        return self.theta
