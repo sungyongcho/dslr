@@ -31,8 +31,13 @@ def calculate_mean(values):
     mean = 0
     non_missing_values = get_non_missing_values(values)
     for element in non_missing_values:
-        mean += element
-    mean /= count
+        if isinstance(element, pd.Timestamp):
+            tmp = (element - pd.Timestamp(0)).total_seconds()
+            tmp = float(tmp)
+            mean += tmp
+        else:
+            mean += element
+    mean /= float(count)
     return mean
 
 
@@ -197,7 +202,8 @@ def describe_dataset(filename):
                 values = df[column]
                 count = calculate_count(values)
                 # needs to check
-                mean = values.mean()
+                print(type(values[0]))
+                mean = pd.Timestamp(calculate_mean(values), unit='s')
                 minimum = get_minimum(values)
                 quartiles = calculate_quartiles(values)
                 maximum = get_maximum(values)
@@ -218,7 +224,7 @@ def describe_dataset(filename):
         print(summary_df)
         print("================================")
         # to compare result with pandas describe funciton
-        print(df.describe(include='all'))
+        print(df.describe(include='all', datetime_is_numeric=True))
     except FileNotFoundError:
         print("File not found. Please provide a valid filename.")
 
