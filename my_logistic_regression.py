@@ -94,39 +94,39 @@ class MyLogisticRegression():
         """
         # Check if the inputs are non-empty and have compatible shapes
         if x.size == 0 or y.size == 0 or self.theta.size == 0 or \
-                x.shape[0] != y.shape[0] or x.shape[1] != self.theta.shape[0] - 1:
+                x.shape[0] != y.shape[0] or x.shape[1] != self.theta.shape[0]:
             return None
 
         m = x.shape[0]  # Number of samples
 
-        # Add bias term to the feature matrix
-        x_with_bias = np.c_[np.ones((m, 1)), x]
-
         # Compute the predicted probabilities using the sigmoid function
-        y_hat = self.sigmoid_(np.dot(x_with_bias, self.theta))
+        y_hat = self.sigmoid_(np.dot(x, self.theta))
 
         # Compute the gradient vector
-        gradient = np.dot(x_with_bias.T, y_hat - y) / m
+        gradient = np.dot(x.T, y_hat - y) / m
 
-        if self.penalty == 'l2':
-            gradient[1:] += (self.lambda_ / m) * self.theta[1:]
+        # if self.penalty == 'l2':
+        #     gradient[1:] += (self.lambda_ / m) * self.theta[1:]
 
         return gradient
 
     def fit_(self, x, y):
+        # Add bias term to the feature matrix
+        x_with_bias = np.hstack((np.ones((x.shape[0], 1)), x))
+        # print(x_with_bias)
+
         for i in range(self.max_iter):
-            gradient_update = self.gradient_(x, y)
+            gradient_update = self.gradient_(x_with_bias, y)
             if gradient_update is None:
                 return None
-            self.theta = self.theta.astype(np.float64)
+            # self.theta = self.theta.astype(np.float64)
             # Update theta using the mean gradient
-            self.theta -= self.alpha * \
-                gradient_update.mean(axis=1, keepdims=True)
+            self.theta -= self.alpha * gradient_update
             # if i % 10000 == 0:
             #     print(i, "th:", self.theta.flatten())
         return self.theta
 
-    def stochastic_fit_(self, x, y):
+    def stochastic_fit_(self, x, y, batch=0):
         num_examples = x.shape[0]
         for iteration in range(self.max_iter):
             shuffled_indices = np.random.permutation(num_examples)
@@ -137,12 +137,38 @@ class MyLogisticRegression():
                 x_i = x_shuffled[i]
                 y_i = y_shuffled[i]
 
-                gradient_update = self.gradient_(x_i[np.newaxis, :], y_i[np.newaxis, :])
+                gradient_update = self.gradient_(
+                    x_i[np.newaxis, :batch], y_i[np.newaxis, :batch])
                 if gradient_update is None:
                     return None
 
                 self.theta = self.theta.astype(np.float64)
-                self.theta -= self.alpha * gradient_update
+                self.theta -= self.alpha * \
+                    gradient_update.mean(axis=1, keepdims=True)
+
+            if iteration % 10000 == 0:
+                print(iteration, "th:", self.theta.flatten())
+        return self.theta
+
+    # stochastic_fit testing without having inner loop
+    def stochastic_fit_2_(self, x, y):
+        num_examples = x.shape[0]
+        for iteration in range(self.max_iter):
+            shuffled_indices = np.random.permutation(num_examples)
+            x_shuffled = x[shuffled_indices]
+            y_shuffled = y[shuffled_indices]
+
+            gradient_update = self.gradient_(
+                # Pick the first random data point
+                x_shuffled[:1], y_shuffled[:1]
+            )
+            if gradient_update is None:
+                return None
+
+            self.theta = self.theta.astype(np.float64)
+            # Update theta using the mean gradient
+            self.theta -= self.alpha * \
+                gradient_update.mean(axis=1, keepdims=True)
 
             if iteration % 10000 == 0:
                 print(iteration, "th:", self.theta.flatten())
