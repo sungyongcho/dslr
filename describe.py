@@ -117,7 +117,6 @@ def get_maximum(values):
 
 # for categorical data
 
-
 def calculate_unique(values):
     unique_values = []
     for value in values:
@@ -201,8 +200,6 @@ def describe_dataset(filename):
             elif df.dtypes[column] == 'datetime64[ns]':
                 values = df[column]
                 count = calculate_count(values)
-                # needs to check
-                print(type(values[0]))
                 mean = pd.Timestamp(calculate_mean(values), unit='s')
                 minimum = get_minimum(values)
                 quartiles = calculate_quartiles(values)
@@ -222,9 +219,9 @@ def describe_dataset(filename):
         # print(summary_df.columns)
         pd.set_option('display.max_columns', None)
         print(summary_df)
-        print("================================")
-        # to compare result with pandas describe funciton
-        print(df.describe(include='all', datetime_is_numeric=True))
+        # print("================================")
+        # # to compare result with pandas describe funciton
+        # print(df.describe(include='all', datetime_is_numeric=True))
     except FileNotFoundError:
         print("File not found. Please provide a valid filename.")
 
