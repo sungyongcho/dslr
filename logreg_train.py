@@ -167,7 +167,7 @@ if __name__ == "__main__":
 		# Load the data
 		df, features = load_data(sys.argv[1])
 		df = df.drop(columns=['Arithmancy', 'Potions',
- 								'Care of Magical Creatures'])
+								'Care of Magical Creatures'])
 		df.dropna(inplace=True)
 		target_categories = df['Hogwarts House'].unique()
 
