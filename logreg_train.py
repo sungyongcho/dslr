@@ -82,7 +82,7 @@ def train(data, target_categories, param='batch'):
 		classifier = MyLR(np.random.rand(x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, param)
 		if (param == 'batch'):
 			theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.fit_(x, y_labelled)
-		elif (param == 'stochastic'):
+		elif (param == 'sgd'):
 			theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.stochastic_fit(x, y_labelled)
 		elif (param == 'mini'):
 			theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.mini_batch_fit(x, y_labelled)
@@ -137,7 +137,7 @@ def compare_optimization_algorithms(data, target_categories):
 
 def save(data, target_categories):
 	print(f"Starting training each classifier for logistic regression...")
-	weights = train(data, target_categories)
+	weights = train(data, target_categories, param='mini')
 
 	# Get the directory of the script
 	script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -159,6 +159,8 @@ def save(data, target_categories):
 	df.to_csv('weights.csv', index=False)
 
 if __name__ == "__main__":
+	# 그냥이면은 batch로
+	# 세번째 argv가 들어오면 batch, sgd, mini 로 돌아가도록
 	if len(sys.argv) != 2:
 		print(f"Usage: python {sys.argv[0]} [data path]")
 	else:
@@ -178,4 +180,4 @@ if __name__ == "__main__":
 		new_data = np.column_stack((normalized_x, y))
 		#print(target_categories)
 		save(new_data, target_categories)
-		compare_optimization_algorithms(new_data, target_categories)
+		# compare_optimization_algorithms(new_data, target_categories)
