@@ -5,6 +5,7 @@ import sys
 import os
 from sklearn.model_selection import train_test_split
 from my_logistic_regression import MyLogisticRegression as MyLR
+from hogwarts_mapping import mapping, colors
 
 
 def load_data(path):
@@ -44,62 +45,28 @@ def denormalize_thetas(thetas, data_max, data_min):
     return denormalized_thetas
 
 
-def label_data(y, house):
-    y_ = np.zeros(y.shape)
-    y_[np.where(y == int(house))] = 1
-    y_labelled = y_.reshape(-1, 1)
-    # print("y_labelled shape:", y_labelled.shape)
-    # print("y_labelled[:5]:", y_labelled[:5])
-    return y_labelled
-
-
-def data_spliter_by(x, y, house):
-    # print("y:", y, "house:", house)
-    y_ = np.zeros(y.shape)
-    y_[np.where(y == (house))] = 1
-    y_labelled = y_.reshape(-1, 1)
-    # print("y_labelled shape:", y_labelled.shape)
-    # print("y_labelled[:5]:", y_labelled[:5])
-    return train_test_split(x, y_labelled, test_size=0.2, random_state=42)
-
-
-def predict_(x, thetas):
-    for v in [x, thetas]:
-        if not isinstance(v, np.ndarray):
-            print(f"Invalid input: argument {v} of ndarray type required")
-            return None
-
-    if not x.ndim == 2:
-        print("Invalid input: wrong shape of x", x.shape)
-        return None
-
-    if thetas.ndim == 1 and thetas.size == x.shape[1] + 1:
-        thetas = thetas.reshape(x.shape[1] + 1, 1)
-    elif not (thetas.ndim == 2 and thetas.shape == (x.shape[1] + 1, 1)):
-        print(f"p Invalid input: wrong shape of {thetas}", thetas.shape)
-        return None
-
-    X = np.hstack((np.ones((x.shape[0], 1)), x))
-    return np.array(1 / (1 + np.exp(-X.dot(thetas))))
-
-
 def train(data, target_categories, param='batch'):
     weights = []
     x = data[:, :-1]
-    for house in range(len(target_categories)):
-        print(f"Current house: {house}")
-        y_labelled = label_data(data[:, -1], house)
+    y = data[:, -1]
+
+    for house in target_categories:
+        house_label = mapping[house]
+        print(f"Current house: {house} (Label: {house_label})")
+
+        # Convert the target data to binary labels for the current house
+        y_labeled = np.where(y == house_label, 1, 0).reshape(-1, 1)
         classifier = MyLR(np.random.rand(
             x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, param)
         if (param == 'batch'):
             theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.fit_(
-                x, y_labelled)
+                x, y_labeled)
         elif (param == 'sgd'):
             theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.stochastic_fit(
-                x, y_labelled)
+                x, y_labeled)
         elif (param == 'mini'):
             theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.mini_batch_fit(
-                x, y_labelled)
+                x, y_labeled)
         print('Accuracy: ', accuracy)
 
         # Save the weights for the current class
@@ -109,34 +76,41 @@ def train(data, target_categories, param='batch'):
 
 def compare_optimization_algorithms(data, target_categories):
     x = data[:, :-1]
+    y = data[:, -1]
+
     fig, axes = plt.subplots(1, 3, figsize=(15, 8))
-    for house in range(len(target_categories)):
-        print(f"Current house: {house}")
-        y_labelled = label_data(data[:, -1], house)
-        # theta = fit_(x, y_labelled, np.random.rand(x.shape[1] + 1, 1), 1e-1, 1000)
+    for house in target_categories:
+        house_label = mapping[house]
+        print(f"Current house: {house} (Label: {house_label})")
+
+        y_labeled = np.where(y == house_label, 1, 0).reshape(-1, 1)
 
         # class
-        classifier = MyLR(np.random.rand(
+        classifier_batch = MyLR(np.random.rand(
             x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, 'batch')
-        theta, accuracy, accuracy_list, loss_list, epoch_list = classifier.fit_(
-            x, y_labelled)
-        classifier = MyLR(np.random.rand(
-            x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, 'sgd')
-        # classifier.optimizer = 'sgd'
-        theta_sgd, accuracy_sgd, accuracy_list_sgd, loss_list_sgd, epoch_list_sgd = classifier.stochastic_fit(
-            x, y_labelled)
-        classifier = MyLR(np.random.rand(
-            x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, 'mini')
-        # classifier.optimizer = 'mini'
-        theta_mini, accuracy_mini, accuracy_list_mini, loss_list_mini, epoch_list_mini = classifier.mini_batch_fit(
-            x, y_labelled)
+        theta_batch, accuracy_batch, accuracy_list_batch, loss_list_batch, epoch_list_batch = classifier_batch.fit_(
+            x, y_labeled)
 
-        print('Accuracy: ', accuracy_sgd, accuracy_mini, accuracy)
+        classifier_sgd = MyLR(np.random.rand(
+            x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, 'sgd')
+        theta_sgd, accuracy_sgd, accuracy_list_sgd, loss_list_sgd, epoch_list_sgd = classifier_sgd.stochastic_fit(
+            x, y_labeled)
+
+        classifier_mini = MyLR(np.random.rand(
+            x.shape[1] + 1, 1), 1e-1, 1000, None, 0.0, 'mini')
+        theta_mini, accuracy_mini, accuracy_list_mini, loss_list_mini, epoch_list_mini = classifier_mini.mini_batch_fit(
+            x, y_labeled)
+
+        print('Accuracy: ', accuracy_sgd, accuracy_mini, accuracy_batch)
+
+        house_color = colors[house]
+
         axes[0].plot(epoch_list_sgd, loss_list_sgd,
-                     label=target_categories[house])
+                     label=house, color=house_color)
         axes[1].plot(epoch_list_mini, loss_list_mini,
-                     label=target_categories[house])
-        axes[2].plot(epoch_list, loss_list, label=target_categories[house])
+                     label=house, color=house_color)
+        axes[2].plot(epoch_list_batch, loss_list_batch,
+                     label=house, color=house_color)
 
     axes[0].set_xlabel('epoch')
     axes[0].set_ylabel('loss')
@@ -159,9 +133,9 @@ def compare_optimization_algorithms(data, target_categories):
     plt.show()
 
 
-def save(data, target_categories):
+def save(data, target_categories, params):
     print(f"Starting training each classifier for logistic regression...")
-    weights = train(data, target_categories, param='mini')
+    weights = train(data, target_categories, params)
 
     # Get the directory of the script
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -184,10 +158,12 @@ def save(data, target_categories):
 
 
 if __name__ == "__main__":
-    # 그냥이면은 batch로
-    # 세번째 argv가 들어오면 batch, sgd, mini 로 돌아가도록
-    if len(sys.argv) != 2:
-        print(f"Usage: python {sys.argv[0]} [data path]")
+    if not (2 <= len(sys.argv) and len(sys.argv) <= 3):
+        print(
+            f"Usage:  python {sys.argv[0]} [data path] (for batch gradient descent)")
+        print(f"\tpython {sys.argv[0]} [data path] [batch option]")
+        print(
+            f"\tthree batch options: batch, sgd (for stochastic), mini (for mini-batch)")
     else:
         # Load the data
         df, features = load_data(sys.argv[1])
@@ -196,14 +172,15 @@ if __name__ == "__main__":
         df.dropna(inplace=True)
         target_categories = df['Hogwarts House'].unique()
 
-        # Map unique values to numbers
-        mapping = {'Ravenclaw': 0, 'Slytherin': 1,
-                   'Gryffindor': 2, 'Hufflepuff': 3}
-
         x = df.select_dtypes(include='number')
         normalized_x, data_min, data_max = normalization(x.values)
         y = df['Hogwarts House'].replace(mapping).values
         new_data = np.column_stack((normalized_x, y))
-        # print(target_categories)
-        save(new_data, target_categories)
-        # compare_optimization_algorithms(new_data, target_categories)
+
+        if len(sys.argv) == 2:
+            save(new_data, target_categories, 'batch')
+        else:
+            save(new_data, target_categories, sys.argv[2])
+
+        # Bonus: plotting to compare all three gradient descent methods
+        compare_optimization_algorithms(new_data, target_categories)
