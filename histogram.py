@@ -1,6 +1,7 @@
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+from hogwarts_mapping import colors
 
 
 def load_data(path):
@@ -37,7 +38,10 @@ def display_histogram(df):
 
     # Plot histograms for each homogeneous course
     plt.figure()
-    grouped[homogeneous_course].plot.hist(alpha=0.5, legend=True, bins=10)
+    for house, group in grouped:
+        group[homogeneous_course].plot.hist(
+            alpha=0.5, legend=True, bins=10, color=colors[house], label=house)
+
     plt.title(f'Histogram of {homogeneous_course} Scores')
     plt.xlabel('Score')
     plt.ylabel('Frequency')
