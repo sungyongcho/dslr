@@ -117,6 +117,7 @@ def get_maximum(values):
 
 # for categorical data
 
+
 def calculate_unique(values):
     unique_values = []
     for value in values:

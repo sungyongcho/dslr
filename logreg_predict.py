@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-import sys, os
+import sys
+import os
 from my_logistic_regression import MyLogisticRegression
 from logreg_train import normalization
 
@@ -40,7 +41,8 @@ if __name__ == "__main__":
             # theta_nested.pop(0)
             # print(theta_nested)
 
-            mylr = MyLogisticRegression(np.array(theta[1:]), 0.1, 1000, None, 0.0, 'batch')
+            mylr = MyLogisticRegression(
+                np.array(theta[1:]), 0.1, 1000, None, 0.0, 'batch')
 
             # print(len(numeric_predict))
             # # print(len(classzero_nested))
