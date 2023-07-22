@@ -38,3 +38,15 @@ def denormalize_thetas(thetas, data_max, data_min):
         data_min[1] - slope * data_min[0]
     denormalized_thetas = np.array([intercept, slope]).reshape(-1, 1)
     return denormalized_thetas
+
+
+def fill_columns_mean(numeric_predict):
+
+    column_means = np.nanmean(numeric_predict, axis=0)
+
+    # Fill missing values with column-wise averages
+    for i in range(numeric_predict.shape[1]):
+        column_mask = np.isnan(numeric_predict[:, i])
+        numeric_predict[column_mask, i] = column_means[i]
+
+    return numeric_predict
