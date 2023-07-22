@@ -215,20 +215,21 @@ def describe_dataset(filename):
             # Append the temporary DataFrame to the summary DataFrame
             summary_df = pd.concat([summary_df, temp_df], axis=1)
 
-        # summary_df.reset_index(drop=True, inplace=True)
-
-        # print(summary_df.columns)
+        # to show all the columns
         pd.set_option('display.max_columns', None)
+
         print(summary_df)
-        # print("================================")
+
         # # to compare result with pandas describe funciton
+        # print("================================")
         # print(df.describe(include='all', datetime_is_numeric=True))
     except FileNotFoundError:
         print("File not found. Please provide a valid filename.")
 
 
-if len(sys.argv) != 2:
-    print("Usage: python describe.py [dataset_filename]")
-else:
-    dataset_filename = sys.argv[1]
-    describe_dataset(dataset_filename)
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python describe.py [dataset_filename]")
+    else:
+        dataset_filename = sys.argv[1]
+        describe_dataset(dataset_filename)
