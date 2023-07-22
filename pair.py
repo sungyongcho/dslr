@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import seaborn as sns
+import sys
+from hogwarts_mapping import colors
 
 
 def pair(data):
     # Step 3: Create pair plot or scatter plot matrix for categorical features
     houses = data['Hogwarts House'].unique()
-    colors = {'Ravenclaw': '#2b7bba', 'Slytherin': '#138b4a',
-              'Gryffindor': '#c72c41', 'Hufflepuff': '#e9c24d'}
 
     # Increase the size of the figure and adjust padding/margins
     sns.set(font_scale=1.0)
@@ -19,7 +19,8 @@ def pair(data):
 
     # Rotate the y-labels
     g = sns.pairplot(data, kind='scatter', diag_kind='hist',
-                     height=1.5, aspect=1.5, hue='Hogwarts House', palette=colors, plot_kws=plot_kws)
+                     height=1.5, aspect=1.5, hue='Hogwarts House',
+                     palette=colors, plot_kws=plot_kws)
 
     for ax in g.axes.flat:
         ax.set_ylabel(ax.get_ylabel(), rotation=45,
@@ -40,10 +41,12 @@ def pair(data):
 
 
 if __name__ == "__main__":
-    data = pd.read_csv('./datasets/dataset_train.csv').set_index('Index')
-    print(data.columns)
-
-    numeric_features = data.select_dtypes(include='number').columns
-    numeric_features = numeric_features.append(
-        pd.Index([data['Hogwarts House']]))
-    pair(data)
+    if len(sys.argv) != 2:
+        print("Usage: python describe.py [dataset_filename]")
+    else:
+        data = pd.read_csv(sys.argv[1]).set_index('Index')
+        # print(data.columns)
+        numeric_features = data.select_dtypes(include='number').columns
+        numeric_features = numeric_features.append(
+            pd.Index([data['Hogwarts House']]))
+        pair(data)
